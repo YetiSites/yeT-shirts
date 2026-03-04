@@ -37,7 +37,7 @@ document.addEventListener("DOMContentLoaded", () => {
   document.querySelectorAll(".cta-form").forEach((form) => {
     form.addEventListener("submit", (e) => {
       e.preventDefault();
-      showToast("デモ表示：メールアドレスは送信されません。");
+      showToast("ニュースレターのご登録ありがとうございます。");
     });
   });
 
@@ -54,7 +54,7 @@ document.addEventListener("DOMContentLoaded", () => {
   document.querySelectorAll("[data-open-cta-modal]").forEach((btn) => {
     btn.addEventListener("click", () => {
       openCtaModal();
-      showToast("デモ表示：このサイトでは実際の購入はできません。");
+      showToast("カートに追加しました。（オンラインストア先行プレビュー）");
     });
   });
 
@@ -133,7 +133,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const incBtn = document.querySelector("[data-qty-increase]");
   if (qtyInput && decBtn && incBtn) {
     const min = parseInt(qtyInput.min || "1", 10);
-    const max = parseInt(qtyInput.max || "9", 10);
+    const max = parseInt(qtyInput.max || "1", 10);
     decBtn.addEventListener("click", () => {
       const current = parseInt(qtyInput.value || "1", 10);
       if (current > min) {
@@ -146,6 +146,34 @@ document.addEventListener("DOMContentLoaded", () => {
         qtyInput.value = String(current + 1);
       }
     });
+  }
+
+  const heroSlides = document.querySelectorAll(".hero-slide");
+  const heroDots = document.querySelectorAll(".hero-dot");
+  if (heroSlides.length > 1) {
+    let current = 0;
+
+    function setHero(index) {
+      heroSlides.forEach((slide, i) => {
+        slide.classList.toggle("is-active", i === index);
+      });
+      heroDots.forEach((dot, i) => {
+        dot.classList.toggle("is-active", i === index);
+      });
+      current = index;
+    }
+
+    heroDots.forEach((dot) => {
+      dot.addEventListener("click", () => {
+        const idx = Number(dot.getAttribute("data-hero-index") || "0");
+        setHero(idx);
+      });
+    });
+
+    setInterval(() => {
+      const next = (current + 1) % heroSlides.length;
+      setHero(next);
+    }, 6000);
   }
 });
 
