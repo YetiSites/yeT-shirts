@@ -1,0 +1,145 @@
+/* Product Detail Page */
+.product-main {
+    padding: 36px 0 40px;
+}
+
+.product-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+    gap: 34px;
+    align-items: flex-start;
+}
+
+.product-gallery {
+    position: sticky;
+    top: 84px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.product-gallery-main {
+    border-radius: 30px;
+    overflow: hidden;
+    border: 1px solid rgba(14, 32, 63, 0.08);
+    background: #ffffff;
+    position: relative;
+}
+
+.product-gallery-main img {
+    width: 100%;
+    aspect-ratio: 4/5;
+    object-fit: cover;
+}
+
+.gallery-tag {
+    top: 14px;
+    left: 14px;
+}
+
+.product-gallery-thumbs {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 8px;
+}
+
+.thumb {
+    padding: 0;
+    border-radius: 18px;
+    overflow: hidden;
+    border: 1px solid rgba(14, 32, 63, 0.08);
+    background: #f2f5fb;
+    cursor: pointer;
+    transition: border-color var(--transition-fast), transform var(--transition-fast), opacity var(--transition-fast);
+}
+
+.thumb img {
+    width: 100%;
+    aspect-ratio: 4/5;
+    object-fit: cover;
+}
+
+.thumb:hover {
+    border-color: rgba(75, 127, 173, 0.75);
+    transform: translateY(-1px);
+}
+
+.thumb.is-active {
+    border-color: rgba(75, 127, 173, 0.95);
+}
+
+.product-details {
+    padding-top: 4px;
+}
+
+.product-detail-price {
+    margin: 6px 0 10px;
+    font-size: 18px;
+}
+
+.product-detail-price span {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-left: 4px;
+}
+
+.product-detail-lead {
+    font-size: 14px;
+    line-height: 1.8;
+    color: var(--text-muted);
+}
+
+.product-options {
+    margin-top: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.link-small {
+    border: none;
+    background: none;
+    padding: 0;
+    font-size: 11px;
+    color: var(--accent-strong);
+    cursor: pointer;
+}
+
+.product-cta {
+    margin-top: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.product-cta-note {
+    margin: 0;
+    font-size: 11px;
+    color: var(--text-muted);
+}
+
+.spec-list {
+    margin: 0 0 8px;
+}
+
+.spec-row {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding-block: 4px;
+}
+
+.spec-row dt {
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+.spec-row dd {
+    margin: 0;
+    font-size: 13px;
+}
+
+.section-related {
+    padding-top: 0;
+    padding-bottom: 60px;
+}

@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Yeti Clicker | Yeti Atelier</title>
+  <link rel="stylesheet" href="./styles.css" />
+  <link rel="stylesheet" href="./css/game.css" />
+</head>
+<body class="game-body">
+  <header class="site-header">
+    <div class="container header-inner">
+      <a href="./index.html" class="logo">
+        <span class="logo-mark">
+          <img src="./img/yeti_allstar_icon.png" alt="Yeti Atelier" class="logo-icon" />
+        </span>
+        <span class="logo-text">Yeti Atelier</span>
+      </a>
+      <a href="./index.html" class="btn btn-ghost btn-sm">ショップに戻る</a>
+    </div>
+  </header>
+
+  <main class="game-container">
+    <section class="score-section">
+      <div class="score-display">
+        <span class="score-label">Yeti Points</span>
+        <h1 id="score">0</h1>
+        <p class="per-second">毎秒: <span id="pps">0</span> pts</p>
+      </div>
+    </section>
+
+    <!-- Visual Area for Allies -->
+    <section class="visual-section">
+      <div id="ally-container" class="ally-container">
+        <!-- Allies will be rendered here -->
+      </div>
+    </section>
+
+    <section class="click-section">
+      <div id="click-area" class="click-area">
+        <img src="./img/for_game_yeti.png" alt="Yeti" id="yeti-clicker" class="yeti-image" />
+      </div>
+    </section>
+
+    <section class="upgrade-section">
+      <h2 class="section-title">アップグレード</h2>
+      <div id="upgrade-list" class="upgrade-list">
+        <!-- Upgrades will be populated by JS -->
+      </div>
+    </section>
+  </main>
+
+  <script src="./game.js"></script>
+</body>
+</html>

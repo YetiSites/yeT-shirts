@@ -1,0 +1,221 @@
+/* Reset & Base for Game */
+.game-body {
+  background: radial-gradient(circle at center, #f0f4f8, #d9e2ec);
+  min-height: 100vh;
+  overflow-x: hidden;
+  color: #334e68;
+}
+
+.game-container {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 80px 20px 40px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2rem;
+}
+
+/* Score Display */
+.score-section {
+  width: 100%;
+  text-align: center;
+}
+
+.score-display {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(10px);
+  padding: 1.5rem;
+  border-radius: 20px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.score-label {
+  font-size: 0.875rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #627d98;
+}
+
+#score {
+  font-size: 3.5rem;
+  font-weight: 800;
+  margin: 0.5rem 0;
+  font-family: 'Inter', sans-serif;
+}
+
+.per-second {
+  font-size: 1rem;
+  color: #486581;
+}
+
+/* Ally Visual Area */
+.visual-section {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.4);
+  backdrop-filter: blur(5px);
+  border-radius: 20px;
+  padding: 15px;
+  min-height: 120px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+.ally-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  min-width: 100%;
+}
+
+.ally-unit {
+  width: 32px;
+  height: auto;
+  animation: allyBounce 2s infinite ease-in-out;
+  transition: all 0.3s ease;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+}
+
+@keyframes allyBounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
+}
+
+/* Click Area */
+.click-section {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.click-area {
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: transform 0.1s ease;
+}
+
+.yeti-image {
+  width: 250px;
+  height: auto;
+  user-select: none;
+  -webkit-user-drag: none;
+  filter: drop-shadow(0 10px 20px rgba(0,0,0,0.1));
+}
+
+.click-area:active {
+  transform: scale(0.95);
+}
+
+/* Floating Text Animation */
+.floating-text {
+  position: absolute;
+  font-weight: bold;
+  font-size: 1.5rem;
+  color: #102a43;
+  pointer-events: none;
+  animation: floatUp 0.8s ease-out forwards;
+  z-index: 10;
+}
+
+@keyframes floatUp {
+  0% { transform: translateY(0); opacity: 1; }
+  100% { transform: translateY(-100px); opacity: 0; }
+}
+
+/* Upgrades */
+.upgrade-section {
+  width: 100%;
+}
+
+.section-title {
+  font-size: 1.25rem;
+  margin-bottom: 1rem;
+  padding-left: 10px;
+}
+
+.upgrade-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.upgrade-card {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(8px);
+  padding: 12px;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  transition: all 0.2s ease;
+}
+
+.upgrade-card.locked {
+  opacity: 0.5;
+  filter: grayscale(1);
+}
+
+.upgrade-card:not(.locked):hover {
+  background: rgba(255, 255, 255, 0.9);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+  cursor: pointer;
+}
+
+.upgrade-icon-wrap {
+  width: 60px;
+  height: 60px;
+  background: #fff;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.upgrade-icon {
+  width: 50px;
+  height: auto;
+}
+
+.upgrade-info {
+  flex: 1;
+}
+
+.upgrade-name {
+  font-weight: 700;
+  font-size: 1rem;
+  margin-bottom: 2px;
+}
+
+.upgrade-cost {
+  font-size: 0.875rem;
+  color: #627d98;
+}
+
+.upgrade-count {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #243b53;
+  padding-right: 10px;
+}
+
+/* Color Variations via Filter */
+.tier-0 .upgrade-icon, .tier-0.yeti-image, .tier-0.ally-unit { filter: none; }
+.tier-1 .upgrade-icon, .tier-1.yeti-image, .tier-1.ally-unit { filter: hue-rotate(90deg) brightness(1.1); }
+.tier-2 .upgrade-icon, .tier-2.yeti-image, .tier-2.ally-unit { filter: hue-rotate(180deg) contrast(1.2); }
+.tier-3 .upgrade-icon, .tier-3.yeti-image, .tier-3.ally-unit { filter: hue-rotate(270deg) saturate(1.5); }
+.tier-4 .upgrade-icon, .tier-4.yeti-image, .tier-4.ally-unit { filter: invert(0.1) sepia(1) hue-rotate(30deg) saturate(2); }
+
+/* Utility */
+.btn-sm {
+  padding: 0.5rem 1rem;
+  font-size: 0.75rem;
+}
