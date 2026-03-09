@@ -790,6 +790,46 @@ body.v-aurora {
   100% { background-position: 0% 50%; }
 }
 
+/* オーロラ時の視認性改善 */
+body.v-aurora {
+  color: #e0f2fe;
+}
+
+body.v-aurora .score-display,
+body.v-aurora .upgrade-card,
+body.v-aurora .visual-section,
+body.v-aurora .guide-item,
+body.v-aurora .achievement-item {
+  background: rgba(15, 23, 42, 0.7);
+  backdrop-filter: blur(15px);
+  border-color: rgba(56, 189, 248, 0.4);
+  color: #f0f9ff;
+}
+
+body.v-aurora .score-label,
+body.v-aurora .upgrade-cost,
+body.v-aurora .per-second,
+body.v-aurora .per-click,
+body.v-aurora .badge-info p,
+body.v-aurora .guide-text p {
+  color: #bae6fd;
+}
+
+body.v-aurora .main-tab-btn {
+  color: #94a3b8;
+}
+
+body.v-aurora .main-tab-btn.active {
+  color: #f0f9ff;
+}
+
+body.v-aurora #score,
+body.v-aurora .upgrade-name,
+body.v-aurora .upgrade-count {
+  color: #ffffff;
+  text-shadow: 0 0 10px rgba(56, 189, 248, 0.6);
+}
+
 body.v-gold .yeti-image {
   filter: drop-shadow(0 0 20px #ffd700) brightness(1.2) sepia(0.5);
   animation: goldPulse 2s infinite alternate;

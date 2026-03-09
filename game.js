@@ -20,7 +20,9 @@ let gameState = {
         { id: 'guardian', name: 'オーロラの守護者', baseCost: 10000000, pps: 25000, count: 0, tier: 8, desc: '極光を操りし精鋭' },
         { id: 'god', name: 'イエティ神', baseCost: 200000000, pps: 123456, count: 0, tier: 4, desc: '全知全能の輝き' }
     ],
-    visuals: []
+    visuals: [],
+    selectedTier: 0,
+    disabledVisuals: []
 };
 
 const VISUAL_ITEMS = [
@@ -33,11 +35,11 @@ const ACHIEVEMENTS = [
     { id: 'click-100', name: '新人探検家', desc: '100回クリックする', icon: '⛺', condition: (state) => state.totalClicks >= 100, bonus: 'クリック +1' },
     { id: 'click-500', name: '超速タップ', desc: '500回クリックする', icon: '⚡', condition: (state) => state.totalClicks >= 500, bonus: 'クリック +2' },
     { id: 'mini-10', name: 'イエティの守護者', desc: 'ミニイエティを10匹持つ', icon: '🛡️', condition: (state) => state.upgrades[0].count >= 10, bonus: 'PPS 1.1倍' },
-    { id: 'ally-50', name: '雪山の村長', desc: '仲間を計50匹持つ', icon: '🏘️', condition: (state) => state.upgrades.reduce((s,u)=>s+u.count, 0) >= 50, bonus: '購入コスト 5%OFF' },
+    { id: 'ally-50', name: '雪山の村長', desc: '仲間を計50匹持つ', icon: '🏘️', condition: (state) => state.upgrades.reduce((s, u) => s + u.count, 0) >= 50, bonus: '購入コスト 5%OFF' },
     { id: 'rich-1m', name: '富豪イエティ', desc: '累計100万 pts 獲得', icon: '💎', condition: (state) => state.totalEarned >= 1000000, bonus: '全生産 +10%' },
     { id: 'hero-100m', name: '雪山の英雄', desc: '累計1億 pts 獲得', icon: '⛰️', condition: (state) => state.totalEarned >= 100000000, bonus: 'PPS 1.2倍' },
     { id: 'collector-100', name: '結晶コレクター', desc: '雪の結晶を100個持つ', icon: '❄️', condition: (state) => state.snowflakes >= 100, bonus: '全生産 +20%' },
-    { id: 'lonely-10k', name: '孤独な情熱', desc: '今回のプレイで仲間0人で1万 pts 稼ぐ', icon: '🏔️', condition: (state) => (state.lifeEarned >= 10000 && state.upgrades.reduce((s,u)=>s+u.count, 0) === 0), bonus: 'クリック +5' }
+    { id: 'lonely-10k', name: '孤独な情熱', desc: '今回のプレイで仲間0人で1万 pts 稼ぐ', icon: '🏔️', condition: (state) => (state.lifeEarned >= 10000 && state.upgrades.reduce((s, u) => s + u.count, 0) === 0), bonus: 'クリック +5' }
 ];
 
 // DOM Elements
@@ -68,6 +70,7 @@ const helpBtn = document.getElementById('help-btn');
 const visualListEl = document.getElementById('visual-list');
 const mainTabBtns = document.querySelectorAll('.main-tab-btn');
 const mainTabContents = document.querySelectorAll('.main-tab-content');
+const skinListEl = document.getElementById('skin-list');
 
 // Allies Limit (to avoid lag)
 const MAX_VISIBLE_ALLIES_PER_TYPE = 20;
@@ -78,7 +81,7 @@ function init() {
     renderUpgrades();
     renderAllies();
     updateDisplay();
-    
+
     // Auto Click Interval
     setInterval(() => {
         if (gameState.pps > 0) {
@@ -125,7 +128,7 @@ function init() {
         rebirthConfirmModal.setAttribute('aria-hidden', 'true');
     };
     rebirthCancelBtn.onclick = () => rebirthConfirmModal.setAttribute('aria-hidden', 'true');
-    
+
     // Full Reset Event
     fullResetBtn.onclick = fullReset;
 
@@ -146,6 +149,7 @@ function switchMainTab(tabId) {
         if (c.id === `${tabId}-main-content`) {
             c.classList.add('active');
             if (tabId === 'visuals_main') renderVisualList();
+            if (tabId === 'visuals_selection') renderSkinList();
             if (tabId === 'upgrades') renderUpgrades();
         }
         else c.classList.remove('active');
@@ -172,8 +176,8 @@ clickArea.addEventListener('click', (e) => {
     gameState.totalEarned += value;
     gameState.lifeEarned += value;
     gameState.totalClicks++;
-    
-    createFloatingText(e.clientX, e.clientY, `+${Math.round(value)}`);
+
+    createFloatingText(e.clientX, e.clientY, `+${Math.round(value).toLocaleString()}`);
     updateDisplay();
     checkAchievements();
     saveGame();
@@ -221,25 +225,26 @@ function renderAllies() {
 }
 
 function getCost(upgrade) {
-    return Math.floor(upgrade.baseCost * Math.pow(1.15, upgrade.count));
+    return Math.floor(upgrade.baseCost * Math.pow(1.15, upgrade.count) * getCostMultiplier());
 }
 
 function calculatePPS() {
-    let maxTier = 0;
     gameState.pps = gameState.upgrades.reduce((total, up) => {
-        if (up.count > 0 && up.tier > maxTier) {
-            maxTier = up.tier;
-        }
         return total + (up.pps * up.count);
     }, 0);
 
-    // Update main yeti color based on max tier owned
-    yetiClicker.className = `yeti-image tier-${maxTier}`;
-    
-    // Apply visual effects from visual items
+    // Update main yeti color based on selected skin
+    yetiClicker.className = `yeti-image tier-${gameState.selectedTier}`;
+
+    // Reset body classes and re-apply only active visuals
+    const classesToRemove = VISUAL_ITEMS.map(vi => vi.class);
+    document.body.classList.remove(...classesToRemove);
+
     gameState.visuals.forEach(vId => {
-        const item = VISUAL_ITEMS.find(vi => vi.id === vId);
-        if (item) document.body.classList.add(item.class);
+        if (!gameState.disabledVisuals.includes(vId)) {
+            const item = VISUAL_ITEMS.find(vi => vi.id === vId);
+            if (item) document.body.classList.add(item.class);
+        }
     });
 
     updateDisplay();
@@ -309,19 +314,19 @@ function renderAchievementList() {
 let feverTimeout;
 function spawnGoldenYeti() {
     if (document.querySelector('.golden-yeti')) return;
-    
+
     const img = document.createElement('img');
     img.src = './img/for_game_yeti.png';
     img.className = 'golden-yeti';
     img.style.top = `${Math.random() * 60 + 20}%`;
     img.style.left = `${Math.random() * 80 + 10}%`;
-    
+
     img.onclick = (e) => {
         e.stopPropagation();
         startFever();
         img.remove();
     };
-    
+
     document.body.appendChild(img);
     setTimeout(() => img.remove(), 4000);
 }
@@ -344,12 +349,12 @@ function startFever() {
 
     gameState.feverMultiplier = multiplier;
     document.body.classList.add('fever-active');
-    
+
     if (feverTimeout) clearTimeout(feverTimeout);
-    
+
     let timeLeft = 7;
     updateFeverTimer(timeLeft, label, multiplier);
-    
+
     const interval = setInterval(() => {
         timeLeft--;
         updateFeverTimer(timeLeft, label, multiplier);
@@ -382,18 +387,18 @@ function renderUpgrades() {
     gameState.upgrades.forEach((up, index) => {
         const cost = getCost(up);
         const canAfford = gameState.score >= cost;
-        
+
         const card = document.createElement('div');
         card.className = `upgrade-card tier-${up.tier} ${canAfford ? '' : 'locked'}`;
         card.onclick = () => buyUpgrade(index);
-        
+
         card.innerHTML = `
             <div class="upgrade-icon-wrap">
                 <img src="./img/for_game_yeti.png" class="upgrade-icon" alt="${up.name}">
             </div>
             <div class="upgrade-info">
                 <div class="upgrade-name">${up.name}</div>
-                <div class="upgrade-cost">Price: ${Math.floor(cost)} pts</div>
+                <div class="upgrade-cost">Price: ${Math.floor(cost).toLocaleString()} pts</div>
             </div>
             <div class="upgrade-count">${up.count}</div>
         `;
@@ -402,26 +407,29 @@ function renderUpgrades() {
 }
 
 function updateDisplay() {
-    scoreEl.innerText = Math.round(gameState.score).toLocaleString();
+    const scoreStr = Math.round(gameState.score).toLocaleString();
+    scoreEl.innerText = scoreStr;
+
+    // Dynamic Font Size
+    if (scoreStr.length > 13) scoreEl.style.fontSize = '2.0rem';
+    else if (scoreStr.length > 11) scoreEl.style.fontSize = '2.5rem';
+    else if (scoreStr.length > 9) scoreEl.style.fontSize = '3.0rem';
+    else scoreEl.style.fontSize = '3.5rem';
+
     const currentPPS = gameState.pps * getGlobalMultiplier() * getSnowflakeMultiplier() * gameState.feverMultiplier;
     ppsEl.innerText = Math.round(currentPPS).toLocaleString();
-    
+
     const currentClick = getClickValue() * gameState.feverMultiplier;
     ppcEl.innerText = Math.round(currentClick).toLocaleString();
 
     // Rebirth Info (Based on current life points, non-linear)
     const actualPending = Math.floor(Math.pow(gameState.lifeEarned / 100000, 0.33));
-    
-    // Calculate next threshold: (current_pending + 1) ^ (1/0.33) * 100,000
-    const nextPending = actualPending + 1;
-    const nextTarget = Math.pow(nextPending, 1/0.33) * 100000;
-    const progressToNext = nextTarget - gameState.lifeEarned;
 
     snowflakeCountEl.innerText = gameState.snowflakes.toLocaleString();
     snowflakeBonusEl.innerText = (gameState.snowflakes * 20).toLocaleString();
-    pendingSnowflakesEl.innerText = `${actualPending.toLocaleString()}個`;
+    pendingSnowflakesEl.innerText = actualPending.toLocaleString();
     rebirthBtn.disabled = actualPending <= 0;
-    
+
     // Periodically refresh upgrade cards to update locked/unlocked state
     const cards = document.querySelectorAll('.upgrade-card');
     gameState.upgrades.forEach((up, i) => {
@@ -436,16 +444,16 @@ function updateDisplay() {
 
 function rebirth() {
     const actualPending = Math.floor(Math.pow(gameState.lifeEarned / 100000, 0.33));
-    
+
     if (actualPending <= 0) return;
-    
+
     modalPendingSnowflakes.innerText = actualPending.toLocaleString();
     rebirthConfirmModal.setAttribute('aria-hidden', 'false');
 }
 
 function executeRebirth() {
     const actualPending = Math.floor(Math.pow(gameState.lifeEarned / 100000, 0.33));
-    
+
     gameState.snowflakes += actualPending;
     gameState.score = 0;
     gameState.lifeEarned = 0;
@@ -485,7 +493,9 @@ function loadGame() {
         gameState.achievements = parsed.achievements || [];
         gameState.snowflakes = parsed.snowflakes || 0;
         gameState.visuals = parsed.visuals || [];
-        
+        gameState.selectedTier = parsed.selectedTier || 0;
+        gameState.disabledVisuals = parsed.disabledVisuals || [];
+
         if (parsed.upgrades) {
             parsed.upgrades.forEach((savedUp, i) => {
                 if (gameState.upgrades[i]) {
@@ -502,10 +512,18 @@ function renderVisualList() {
     VISUAL_ITEMS.forEach(item => {
         const isOwned = gameState.visuals.includes(item.id);
         const canAfford = gameState.score >= item.cost;
-        
+        const isDisabled = gameState.disabledVisuals.includes(item.id);
+
         const card = document.createElement('div');
         card.className = `upgrade-card ${isOwned ? 'owned' : (canAfford ? '' : 'locked')}`;
-        if (!isOwned) card.onclick = () => buyVisual(item.id);
+
+        let statusText = `Price: ${item.cost.toLocaleString()} pts`;
+        if (isOwned) {
+            statusText = isDisabled ? '<span style="color:#e53e3e;">解除中</span>' : '<span style="color:#38a169;">装備中</span>';
+            card.onclick = () => toggleVisual(item.id);
+        } else if (canAfford) {
+            card.onclick = () => buyVisual(item.id);
+        }
 
         card.innerHTML = `
             <div class="upgrade-icon-wrap">
@@ -513,21 +531,72 @@ function renderVisualList() {
             </div>
             <div class="upgrade-info">
                 <div class="upgrade-name">${item.name}</div>
-                <div class="upgrade-cost">${isOwned ? '獲得済み' : `Price: ${item.cost.toLocaleString()} pts`}</div>
+                <div class="upgrade-cost">${statusText}</div>
             </div>
+            ${isOwned ? `<button class="btn btn-sm ${isDisabled ? 'btn-primary' : 'btn-ghost'}">${isDisabled ? '装備' : '解除'}</button>` : ''}
         `;
         visualListEl.appendChild(card);
     });
 }
 
+function toggleVisual(id) {
+    if (gameState.disabledVisuals.includes(id)) {
+        gameState.disabledVisuals = gameState.disabledVisuals.filter(v => v !== id);
+    } else {
+        gameState.disabledVisuals.push(id);
+    }
+    calculatePPS();
+    renderVisualList();
+    saveGame();
+}
+
+function renderSkinList() {
+    skinListEl.innerHTML = '';
+
+    // Get unique tiers owned with names
+    const availableSkins = [{ tier: 0, name: 'ミニイエティ' }];
+    gameState.upgrades.forEach(up => {
+        if (up.count > 0 && !availableSkins.find(s => s.tier === up.tier)) {
+            availableSkins.push({ tier: up.tier, name: up.name });
+        }
+    });
+
+    availableSkins.forEach(skin => {
+        const card = document.createElement('div');
+        const isSelected = gameState.selectedTier === skin.tier;
+        card.className = `upgrade-card tier-${skin.tier} ${isSelected ? 'owned' : ''}`;
+        card.onclick = () => selectSkin(skin.tier);
+
+        card.innerHTML = `
+            <div class="upgrade-icon-wrap">
+                <img src="./img/for_game_yeti.png" class="upgrade-icon" alt="${skin.name}">
+            </div>
+            <div class="upgrade-info">
+                <div class="upgrade-name">${skin.name}</div>
+                <div class="upgrade-cost">${isSelected ? '<span style="color:#38a169;">選択中</span>' : 'クリックして変更'}</div>
+            </div>
+        `;
+        skinListEl.appendChild(card);
+    });
+}
+
+function selectSkin(tier) {
+    gameState.selectedTier = tier;
+    calculatePPS();
+    renderSkinList();
+    saveGame();
+}
+
 function buyVisual(id) {
     const item = VISUAL_ITEMS.find(vi => vi.id === id);
     if (!item || gameState.visuals.includes(id)) return;
-    
+
     if (gameState.score >= item.cost) {
         gameState.score -= item.cost;
         gameState.visuals.push(id);
-        document.body.classList.add(item.class);
+        // Ensure it's not in disabled list when bought
+        gameState.disabledVisuals = gameState.disabledVisuals.filter(v => v !== id);
+        calculatePPS();
         renderVisualList();
         updateDisplay();
         saveGame();
