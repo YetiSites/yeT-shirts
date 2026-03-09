@@ -71,6 +71,10 @@ const visualListEl = document.getElementById('visual-list');
 const mainTabBtns = document.querySelectorAll('.main-tab-btn');
 const mainTabContents = document.querySelectorAll('.main-tab-content');
 const skinListEl = document.getElementById('skin-list');
+const exportCodeEl = document.getElementById('export-code');
+const importCodeEl = document.getElementById('import-code');
+const exportBtn = document.getElementById('export-btn');
+const importBtn = document.getElementById('import-btn');
 
 // Allies Limit (to avoid lag)
 const MAX_VISIBLE_ALLIES_PER_TYPE = 20;
@@ -85,7 +89,7 @@ function init() {
     // Auto Click Interval
     setInterval(() => {
         if (gameState.pps > 0) {
-            const added = (gameState.pps * getGlobalMultiplier() * gameState.feverMultiplier) / 10;
+            const added = (gameState.pps * getGlobalMultiplier() * getSnowflakeMultiplier() * gameState.feverMultiplier) / 10;
             gameState.score += added;
             gameState.totalEarned += added;
             gameState.lifeEarned += added;
@@ -128,6 +132,10 @@ function init() {
         rebirthConfirmModal.setAttribute('aria-hidden', 'true');
     };
     rebirthCancelBtn.onclick = () => rebirthConfirmModal.setAttribute('aria-hidden', 'true');
+
+    // Transfer Events
+    exportBtn.onclick = exportGameState;
+    importBtn.onclick = importGameState;
 
     // Full Reset Event
     fullResetBtn.onclick = fullReset;
@@ -464,6 +472,44 @@ function executeRebirth() {
     saveGame();
     achievementPanel.setAttribute('aria-hidden', 'true');
     notifyAchievement({ icon: '❄️', name: '転生完了!', bonus: '雪の結晶を獲得しました' });
+}
+
+function exportGameState() {
+    const data = JSON.stringify(gameState);
+    // Simple obfuscation via Base64 to make it look like a "password"
+    const encoded = btoa(unescape(encodeURIComponent(data)));
+    exportCodeEl.value = encoded;
+    exportCodeEl.select();
+    
+    // Copy to clipboard
+    navigator.clipboard.writeText(encoded).then(() => {
+        notifyAchievement({ icon: '📋', name: '呪文を発行!', bonus: 'クリップボードにコピーしました' });
+    }).catch(() => {
+        notifyAchievement({ icon: '📋', name: '呪文を発行!', bonus: '文字列をコピーしてください' });
+    });
+}
+
+function importGameState() {
+    const code = importCodeEl.value.trim();
+    if (!code) return;
+
+    try {
+        const decoded = decodeURIComponent(escape(atob(code)));
+        const parsed = JSON.parse(decoded);
+        
+        if (confirm("呪文を唱えてデータを上書きしますか？\n現在の進行状況は失われます。")) {
+            gameState = parsed;
+            // Handle cases where saved state might be missing new properties
+            if (!gameState.visuals) gameState.visuals = [];
+            if (!gameState.disabledVisuals) gameState.disabledVisuals = [];
+            if (!gameState.selectedTier) gameState.selectedTier = 0;
+            
+            saveGame();
+            location.reload(); // Refresh to apply all data safely
+        }
+    } catch (e) {
+        alert("その呪文は間違っているようです…");
+    }
 }
 
 function fullReset() {

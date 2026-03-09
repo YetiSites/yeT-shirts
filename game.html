@@ -36,7 +36,7 @@
         <button class="tab-btn" data-tab="guide">ガイド</button>
         <button class="tab-btn active" data-tab="achievements">実績</button>
         <button class="tab-btn" data-tab="rebirth">転生</button>
-        <button class="tab-btn" data-tab="reset">初期化</button>
+        <button class="tab-btn" data-tab="transfer">引継ぎ</button>
       </div>
       <button id="panel-close" class="close-btn">×</button>
     </div>
@@ -94,20 +94,36 @@
       </div>
     </div>
 
-    <div id="reset-content" class="tab-content">
-      <div class="reset-section">
-        <div class="warning-box">
-          <h3>⚠️ 警告 ⚠️</h3>
-          <p>この操作は取り消せません。</p>
-          <ul>
-            <li>現在のスコア</li>
-            <li>購入した仲間</li>
-            <li>解除した実績</li>
-            <li>獲得した雪の結晶</li>
-          </ul>
-          <p>すべてを完全に削除し、最初からやり直します。</p>
+    <div id="transfer-content" class="tab-content">
+      <div class="transfer-section">
+        <div class="transfer-box">
+          <h3>📜 復活の呪文</h3>
+          <p>パスワード（呪文）を使って、他のブラウザや端末にデータを引き継ぐことができます。</p>
+          
+          <div class="transfer-group">
+            <label>現在の進行状況を呪文にする:</label>
+            <div class="input-with-btn">
+              <input type="text" id="export-code" readonly placeholder="ボタンを押して発行">
+              <button id="export-btn" class="btn btn-primary btn-sm">発行</button>
+            </div>
+            <small>※この文字列をコピーして大切に保管してください。</small>
+          </div>
+
+          <div class="transfer-divider"></div>
+
+          <div class="transfer-group">
+            <label>呪文を唱えて再開する:</label>
+            <div class="input-with-btn">
+              <input type="text" id="import-code" placeholder="ここに呪文を貼り付け">
+              <button id="import-btn" class="btn btn-outline btn-sm">再開</button>
+            </div>
+          </div>
         </div>
-        <button id="full-reset-btn" class="btn btn-danger btn-full">データをすべて消去して初期化</button>
+        
+        <div class="reset-mini-section">
+          <p>初期状態に戻したい場合はこちら：</p>
+          <button id="full-reset-btn" class="btn btn-ghost btn-sm">データを初期化する</button>
+        </div>
       </div>
     </div>
   </div>

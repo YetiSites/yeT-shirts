@@ -777,6 +777,93 @@
   transform: translateY(0);
 }
 
+/* Transfer Section */
+.transfer-section {
+  padding: 15px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  overflow-y: auto;
+}
+
+.transfer-box {
+  background: rgba(255, 255, 255, 0.5);
+  border-radius: 16px;
+  padding: 20px;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.transfer-box h3 {
+  margin: 0 0 10px 0;
+  font-size: 1.1rem;
+  color: #243b53;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.transfer-box p {
+  font-size: 0.85rem;
+  color: #627d98;
+  margin-bottom: 20px;
+  line-height: 1.4;
+}
+
+.transfer-group {
+  margin-bottom: 15px;
+}
+
+.transfer-group label {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: 700;
+  margin-bottom: 8px;
+  color: #486581;
+}
+
+.input-with-btn {
+  display: flex;
+  gap: 8px;
+}
+
+.input-with-btn input {
+  flex: 1;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #d9e2ec;
+  font-size: 0.85rem;
+  background: #fff;
+  color: #243b53;
+  font-family: monospace;
+}
+
+.transfer-divider {
+  height: 1px;
+  background: rgba(0, 0, 0, 0.05);
+  margin: 20px 0;
+}
+
+.reset-mini-section {
+  text-align: center;
+  opacity: 0.7;
+}
+
+.reset-mini-section p {
+  font-size: 0.75rem;
+  color: #94a3b8;
+  margin-bottom: 8px;
+}
+
+/* Aurora adjustments for transfer */
+body.v-aurora .transfer-box {
+  background: rgba(15, 23, 42, 0.5);
+  border-color: rgba(56, 189, 248, 0.2);
+}
+body.v-aurora .transfer-box h3 { color: #fff; }
+body.v-aurora .transfer-box p, body.v-aurora .transfer-group label { color: #bae6fd; }
+body.v-aurora .input-with-btn input { background: rgba(0, 0, 0, 0.3); border-color: #1e293b; color: #fff; }
+
+
 /* Visual Item Styles */
 body.v-aurora {
   background: linear-gradient(135deg, #102a43 0%, #004440 50%, #102a43 100%);
