@@ -666,6 +666,18 @@
   padding: 10px;
 }
 
+@media (max-width: 480px) {
+  .score-display {
+    padding: 1.25rem 0.5rem;
+  }
+  .score-label {
+    font-size: 0.75rem;
+  }
+  #score {
+    letter-spacing: -0.02em; /* 文字間を少し詰めて収まりを良くする */
+  }
+}
+
 /* Guide Section */
 .guide-section {
   padding: 20px;

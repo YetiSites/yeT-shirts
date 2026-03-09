@@ -1,6 +1,6 @@
 // Game State
 let gameState = {
-    score: 0,
+    score: 10000000,
     totalEarned: 0,
     lifeEarned: 0,
     totalClicks: 0,
@@ -419,10 +419,11 @@ function updateDisplay() {
     scoreEl.innerText = scoreStr;
 
     // Dynamic Font Size
-    if (scoreStr.length > 13) scoreEl.style.fontSize = '2.0rem';
-    else if (scoreStr.length > 11) scoreEl.style.fontSize = '2.5rem';
-    else if (scoreStr.length > 8) scoreEl.style.fontSize = '3.0rem';
-    else scoreEl.style.fontSize = '3.5rem';
+    if (scoreStr.length > 13) scoreEl.style.fontSize = '1.6rem';
+    else if (scoreStr.length > 11) scoreEl.style.fontSize = '1.8rem';
+    else if (scoreStr.length > 9) scoreEl.style.fontSize = '2rem';
+    else if (scoreStr.length > 7) scoreEl.style.fontSize = '2.2rem';
+    else scoreEl.style.fontSize = '2.4rem';
 
     const currentPPS = gameState.pps * getGlobalMultiplier() * getSnowflakeMultiplier() * gameState.feverMultiplier;
     ppsEl.innerText = Math.round(currentPPS).toLocaleString();
@@ -480,7 +481,7 @@ function exportGameState() {
     const encoded = btoa(unescape(encodeURIComponent(data)));
     exportCodeEl.value = encoded;
     exportCodeEl.select();
-    
+
     // Copy to clipboard
     navigator.clipboard.writeText(encoded).then(() => {
         notifyAchievement({ icon: '📋', name: '呪文を発行!', bonus: 'クリップボードにコピーしました' });
@@ -496,14 +497,14 @@ function importGameState() {
     try {
         const decoded = decodeURIComponent(escape(atob(code)));
         const parsed = JSON.parse(decoded);
-        
+
         if (confirm("呪文を唱えてデータを上書きしますか？\n現在の進行状況は失われます。")) {
             gameState = parsed;
             // Handle cases where saved state might be missing new properties
             if (!gameState.visuals) gameState.visuals = [];
             if (!gameState.disabledVisuals) gameState.disabledVisuals = [];
             if (!gameState.selectedTier) gameState.selectedTier = 0;
-            
+
             saveGame();
             location.reload(); // Refresh to apply all data safely
         }
