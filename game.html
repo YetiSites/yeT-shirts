@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="ja">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -7,10 +8,11 @@
   <link rel="stylesheet" href="./styles.css" />
   <link rel="stylesheet" href="./css/game.css" />
 </head>
+
 <body class="game-body">
   <header class="site-header">
     <div class="container header-inner">
-      <a href="./index.html" class="logo">
+      <a href="" class="logo">
         <span class="logo-mark">
           <img src="./img/yeti_allstar_icon.png" alt="Yeti Atelier" class="logo-icon" />
         </span>
@@ -19,7 +21,7 @@
       <div class="header-right">
         <button id="help-btn" class="icon-button" title="遊び方">ℹ️</button>
         <button id="achievement-btn" class="icon-button" title="実績">🏆</button>
-        <a href="./index.html" class="btn btn-ghost btn-sm">ショップに戻る</a>
+        <a href="./index.html" class="btn btn-ghost btn-sm" style="display: none;">ショップに戻る</a>
       </div>
     </div>
   </header>
@@ -157,7 +159,7 @@
         <button class="main-tab-btn active" data-main-tab="upgrades">仲間</button>
         <button class="main-tab-btn" data-main-tab="visuals_main">見た目</button>
       </div>
-      
+
       <div id="upgrades-main-content" class="main-tab-content active">
         <div id="upgrade-list" class="upgrade-list">
           <!-- Upgrades will be populated by JS -->
@@ -174,4 +176,5 @@
 
   <script src="./game.js"></script>
 </body>
+
 </html>
