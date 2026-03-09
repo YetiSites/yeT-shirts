@@ -16,9 +16,118 @@
         </span>
         <span class="logo-text">Yeti Atelier</span>
       </a>
-      <a href="./index.html" class="btn btn-ghost btn-sm">ショップに戻る</a>
+      <div class="header-right">
+        <button id="help-btn" class="icon-button" title="遊び方">ℹ️</button>
+        <button id="achievement-btn" class="icon-button" title="実績">🏆</button>
+        <a href="./index.html" class="btn btn-ghost btn-sm">ショップに戻る</a>
+      </div>
     </div>
   </header>
+
+  <!-- Achievement Notification -->
+  <div id="notification-container" class="notification-container"></div>
+
+  <!-- Achievement/Rebirth Panel (Modal-like) -->
+  <div id="achievement-panel" class="achievement-panel" aria-hidden="true">
+    <div class="panel-header">
+      <div class="tabs">
+        <button class="tab-btn" data-tab="guide">ガイド</button>
+        <button class="tab-btn active" data-tab="achievements">実績</button>
+        <button class="tab-btn" data-tab="rebirth">転生</button>
+        <button class="tab-btn" data-tab="reset">初期化</button>
+      </div>
+      <button id="panel-close" class="close-btn">×</button>
+    </div>
+
+    <div id="guide-content" class="tab-content">
+      <div class="guide-section">
+        <div class="guide-item">
+          <div class="guide-icon-small">🖱️</div>
+          <div class="guide-text">
+            <h4>タップで集める</h4>
+            <p>中央のイエティをタップしてポイント(pts)を獲得しましょう。</p>
+          </div>
+        </div>
+        <div class="guide-item">
+          <div class="guide-icon-small">🏘️</div>
+          <div class="guide-text">
+            <h4>仲間に任せる</h4>
+            <p>ショップで仲間を雇うと、自動でポイントを生み出してくれます。</p>
+          </div>
+        </div>
+        <div class="guide-item">
+          <div class="guide-icon-small">✨</div>
+          <div class="guide-text">
+            <h4>黄金イエティ</h4>
+            <p>稀に現れる黄金のイエティをタップすると、<b>フィーバーモード</b>突入！生産力が爆上がりします。</p>
+          </div>
+        </div>
+        <div class="guide-item">
+          <div class="guide-icon-small">❄️</div>
+          <div class="guide-text">
+            <h4>転生でさらなる高みへ</h4>
+            <p>ポイントが貯まったら「転生」して雪の結晶を獲得しましょう。1つの結晶で生産力が<b>+20%</b>もアップします。</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="achievements-content" class="tab-content active">
+      <div id="achievement-list" class="achievement-list">
+        <!-- Achievements will be listed here -->
+      </div>
+    </div>
+
+    <div id="rebirth-content" class="tab-content">
+      <div class="rebirth-section">
+        <div class="rebirth-info">
+          <span class="snowflake-icon">❄️</span>
+          <div class="snowflake-text">
+            <p>雪の結晶: <span id="snowflake-count">0</span>個</p>
+            <small>生産ボーナス: +<span id="snowflake-bonus">0</span>%</small>
+          </div>
+        </div>
+        <p class="rebirth-preview">転生で獲得: <span id="pending-snowflakes">0</span>個</p>
+        <button id="rebirth-btn" class="btn btn-outline btn-full">転生して結晶を受け取る</button>
+      </div>
+    </div>
+
+    <div id="reset-content" class="tab-content">
+      <div class="reset-section">
+        <div class="warning-box">
+          <h3>⚠️ 警告 ⚠️</h3>
+          <p>この操作は取り消せません。</p>
+          <ul>
+            <li>現在のスコア</li>
+            <li>購入した仲間</li>
+            <li>解除した実績</li>
+            <li>獲得した雪の結晶</li>
+          </ul>
+          <p>すべてを完全に削除し、最初からやり直します。</p>
+        </div>
+        <button id="full-reset-btn" class="btn btn-danger btn-full">データをすべて消去して初期化</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Rebirth Confirmation Modal -->
+  <div id="rebirth-confirm-modal" class="achievement-panel confirm-modal" aria-hidden="true">
+    <div class="panel-header">
+      <h2>転生の儀式</h2>
+    </div>
+    <div class="confirm-body">
+      <div class="confirm-icon">☄️</div>
+      <p>本当に転生しますか？</p>
+      <div class="confirm-details">
+        <p>現在のスコアと仲間がリセットされます。</p>
+        <div class="reward-highlight">獲得する結晶: <span id="modal-pending-snowflakes">0</span>個</div>
+      </div>
+      <div class="confirm-actions">
+        <button id="rebirth-cancel" class="btn btn-ghost">やめる</button>
+        <button id="rebirth-confirm" class="btn btn-primary">転生する</button>
+      </div>
+    </div>
+  </div>
 
   <main class="game-container">
     <section class="score-section">
@@ -26,6 +135,13 @@
         <span class="score-label">Yeti Points</span>
         <h1 id="score">0</h1>
         <p class="per-second">毎秒: <span id="pps">0</span> pts</p>
+        <p class="per-click">クリック: <span id="ppc">1</span> pts</p>
+      </div>
+    </section>
+
+    <section class="click-section">
+      <div id="click-area" class="click-area">
+        <img src="./img/for_game_yeti.png" alt="Yeti" id="yeti-clicker" class="yeti-image" />
       </div>
     </section>
 
@@ -36,16 +152,22 @@
       </div>
     </section>
 
-    <section class="click-section">
-      <div id="click-area" class="click-area">
-        <img src="./img/for_game_yeti.png" alt="Yeti" id="yeti-clicker" class="yeti-image" />
-      </div>
-    </section>
-
     <section class="upgrade-section">
-      <h2 class="section-title">アップグレード</h2>
-      <div id="upgrade-list" class="upgrade-list">
-        <!-- Upgrades will be populated by JS -->
+      <div class="section-header-tabs">
+        <button class="main-tab-btn active" data-main-tab="upgrades">仲間</button>
+        <button class="main-tab-btn" data-main-tab="visuals_main">見た目</button>
+      </div>
+      
+      <div id="upgrades-main-content" class="main-tab-content active">
+        <div id="upgrade-list" class="upgrade-list">
+          <!-- Upgrades will be populated by JS -->
+        </div>
+      </div>
+
+      <div id="visuals_main-main-content" class="main-tab-content">
+        <div id="visual-list" class="upgrade-list">
+          <!-- Visual items will be populated by JS -->
+        </div>
       </div>
     </section>
   </main>
