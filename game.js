@@ -413,7 +413,7 @@ function updateDisplay() {
     // Dynamic Font Size
     if (scoreStr.length > 13) scoreEl.style.fontSize = '2.0rem';
     else if (scoreStr.length > 11) scoreEl.style.fontSize = '2.5rem';
-    else if (scoreStr.length > 9) scoreEl.style.fontSize = '3.0rem';
+    else if (scoreStr.length > 8) scoreEl.style.fontSize = '3.0rem';
     else scoreEl.style.fontSize = '3.5rem';
 
     const currentPPS = gameState.pps * getGlobalMultiplier() * getSnowflakeMultiplier() * gameState.feverMultiplier;
