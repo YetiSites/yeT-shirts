@@ -1,6 +1,6 @@
 // Game State
 let gameState = {
-    score: 10000000,
+    score: 0,
     totalEarned: 0,
     lifeEarned: 0,
     totalClicks: 0,
