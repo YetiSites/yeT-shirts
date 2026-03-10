@@ -22,8 +22,32 @@ let gameState = {
     ],
     visuals: [],
     selectedTier: 0,
-    disabledVisuals: []
+    disabledVisuals: [],
+    rebirthCount: 0,
+    purchasedBillingItems: [],
+    billing: {
+        premiumFeverEndTime: 0
+    }
 };
+
+const BILLING_ITEMS = [
+    {
+        id: 'summon-golden',
+        name: '黄金イエティ召喚',
+        cost: 0,
+        type: 'pts',
+        desc: '黄金イエティを即座に1匹呼び寄せます',
+        icon: '🔔'
+    },
+    {
+        id: 'premium-fever',
+        name: '黄金イエティフィーバー',
+        cost: 1200,
+        type: 'currency',
+        desc: '1分間、黄金イエティの出現率が5倍になります',
+        icon: '💎'
+    }
+];
 
 const VISUAL_ITEMS = [
     { id: 'aurora-bg', name: 'オーロラの極光', cost: 10000000, desc: '背景がオーロラに包まれます', class: 'v-aurora' },
@@ -38,8 +62,10 @@ const ACHIEVEMENTS = [
     { id: 'ally-50', name: '雪山の村長', desc: '仲間を計50匹持つ', icon: '🏘️', condition: (state) => state.upgrades.reduce((s, u) => s + u.count, 0) >= 50, bonus: '購入コスト 5%OFF' },
     { id: 'rich-1m', name: '富豪イエティ', desc: '累計100万 pts 獲得', icon: '💎', condition: (state) => state.totalEarned >= 1000000, bonus: '全生産 +10%' },
     { id: 'hero-100m', name: '雪山の英雄', desc: '累計1億 pts 獲得', icon: '⛰️', condition: (state) => state.totalEarned >= 100000000, bonus: 'PPS 1.2倍' },
+    { id: 'rebirth-1', name: '宇宙の理', desc: '初めて転生する', icon: '☄️', condition: (state) => state.rebirthCount >= 1, bonus: '全生産 +10%' },
     { id: 'collector-100', name: '結晶コレクター', desc: '雪の結晶を100個持つ', icon: '❄️', condition: (state) => state.snowflakes >= 100, bonus: '全生産 +20%' },
-    { id: 'lonely-10k', name: '孤独な情熱', desc: '今回のプレイで仲間0人で1万 pts 稼ぐ', icon: '🏔️', condition: (state) => (state.lifeEarned >= 10000 && state.upgrades.reduce((s, u) => s + u.count, 0) === 0), bonus: 'クリック +5' }
+    { id: 'lonely-10k', name: '孤独な情熱', desc: '今回のプレイで仲間0人で1万 pts 稼ぐ', icon: '🏔️', condition: (state) => (state.lifeEarned >= 10000 && state.upgrades.reduce((s, u) => s + u.count, 0) === 0), bonus: 'クリック +5' },
+    { id: 'billing-all', name: 'VIPサポーター', desc: 'すべての課金アイテムを購入する', icon: '🎩', condition: (state) => state.purchasedBillingItems.length >= BILLING_ITEMS.length, bonus: '購入コスト 5%OFF' }
 ];
 
 // DOM Elements
@@ -75,6 +101,7 @@ const exportCodeEl = document.getElementById('export-code');
 const importCodeEl = document.getElementById('import-code');
 const exportBtn = document.getElementById('export-btn');
 const importBtn = document.getElementById('import-btn');
+const billingListEl = document.getElementById('billing-list');
 
 // Allies Limit (to avoid lag)
 const MAX_VISIBLE_ALLIES_PER_TYPE = 20;
@@ -100,7 +127,13 @@ function init() {
     // Achievement Check & Golden Yeti Chance
     setInterval(() => {
         checkAchievements();
-        if (Math.random() < 0.05) spawnGoldenYeti(); // 5% chance every 3s
+
+        let spawnChance = 0.05;
+        if (Date.now() < gameState.billing.premiumFeverEndTime) {
+            spawnChance = 0.25; // 5x rate
+        }
+
+        if (Math.random() < spawnChance) spawnGoldenYeti();
     }, 3000);
 
     // Save interval
@@ -159,6 +192,7 @@ function switchMainTab(tabId) {
             if (tabId === 'visuals_main') renderVisualList();
             if (tabId === 'visuals_selection') renderSkinList();
             if (tabId === 'upgrades') renderUpgrades();
+            if (tabId === 'billing') renderBillingList();
         }
         else c.classList.remove('active');
     });
@@ -279,7 +313,10 @@ function getGlobalMultiplier() {
 }
 
 function getCostMultiplier() {
-    return gameState.achievements.includes('ally-50') ? 0.95 : 1.0;
+    let mult = 1.0;
+    if (gameState.achievements.includes('ally-50')) mult *= 0.95;
+    if (gameState.achievements.includes('billing-all')) mult *= 0.95;
+    return mult;
 }
 
 function checkAchievements() {
@@ -464,6 +501,7 @@ function executeRebirth() {
     const actualPending = Math.floor(Math.pow(gameState.lifeEarned / 100000, 0.33));
 
     gameState.snowflakes += actualPending;
+    gameState.rebirthCount = (gameState.rebirthCount || 0) + 1;
     gameState.score = 0;
     gameState.lifeEarned = 0;
     gameState.upgrades.forEach(up => up.count = 0);
@@ -542,6 +580,8 @@ function loadGame() {
         gameState.visuals = parsed.visuals || [];
         gameState.selectedTier = parsed.selectedTier || 0;
         gameState.disabledVisuals = parsed.disabledVisuals || [];
+        gameState.rebirthCount = parsed.rebirthCount || 0;
+        gameState.purchasedBillingItems = parsed.purchasedBillingItems || [];
 
         if (parsed.upgrades) {
             parsed.upgrades.forEach((savedUp, i) => {
@@ -649,5 +689,143 @@ function buyVisual(id) {
         saveGame();
     }
 }
+
+function renderBillingList() {
+    billingListEl.innerHTML = '';
+
+    // Update summon cost based on current PPS (at least 1000)
+    const summonCost = Math.max(1000, Math.floor(gameState.pps * 30));
+    BILLING_ITEMS[0].cost = summonCost;
+
+    BILLING_ITEMS.forEach(item => {
+        const canAfford = item.type === 'pts' ? gameState.score >= item.cost : true; // Currency items always "affordable" visually
+
+        const card = document.createElement('div');
+        card.className = `upgrade-card billing-card ${canAfford ? 'premium' : 'locked'}`;
+        card.onclick = () => buyBillingItem(item.id);
+
+        let costDisplay = '';
+        if (item.id === 'premium-fever') {
+            const timeLeft = Math.max(0, Math.floor((gameState.billing.premiumFeverEndTime - Date.now()) / 1000));
+            if (timeLeft > 0) {
+                costDisplay = `<span style="color:#e53e3e; font-weight:bold;">効果中 (${timeLeft}s)</span>`;
+            } else {
+                costDisplay = `<span class="price-yen">¥${item.cost.toLocaleString()}</span>`;
+            }
+        } else {
+            costDisplay = `Price: ${item.cost.toLocaleString()} pts`;
+        }
+
+        card.innerHTML = `
+            <div class="upgrade-icon-wrap billing-icon-wrap">
+                <span style="font-size:1.8rem;">${item.icon}</span>
+            </div>
+            <div class="upgrade-info">
+                <div class="upgrade-name">${item.name}</div>
+                <div class="upgrade-desc" style="font-size:0.7rem; color:#627d98;">${item.desc}</div>
+                <div class="upgrade-cost">${costDisplay}</div>
+            </div>
+            <div class="billing-badge">Premium</div>
+        `;
+        billingListEl.appendChild(card);
+    });
+}
+
+function buyBillingItem(id) {
+    const item = BILLING_ITEMS.find(bi => bi.id === id);
+    if (!item) return;
+
+    if (item.type === 'pts' && gameState.score < item.cost) {
+        alert("ポイント不足です！");
+        return;
+    }
+
+    if (item.id === 'premium-fever') {
+        showFakePaymentModal(() => {
+            if (!gameState.purchasedBillingItems.includes(id)) {
+                gameState.purchasedBillingItems.push(id);
+            }
+            gameState.billing.premiumFeverEndTime = Date.now() + 60000;
+            notifyAchievement({ icon: '💎', name: 'フィーバー購入!', bonus: '出現率5倍 (1分間)' });
+            checkAchievements();
+            renderBillingList();
+            saveGame();
+        });
+    } else if (item.id === 'summon-golden') {
+        gameState.score -= item.cost;
+        if (!gameState.purchasedBillingItems.includes(id)) {
+            gameState.purchasedBillingItems.push(id);
+        }
+        spawnGoldenYeti();
+        notifyAchievement({ icon: '🔔', name: 'イエティ召喚!', bonus: '黄金イエティが現れた！' });
+        checkAchievements();
+        renderBillingList();
+        updateDisplay();
+        saveGame();
+    }
+}
+
+function showFakePaymentModal(callback) {
+    // Create a funny fake payment modal
+    const modal = document.createElement('div');
+    modal.className = 'achievement-panel fake-payment-modal';
+    modal.style.opacity = '1';
+    modal.style.pointerEvents = 'auto';
+    modal.style.transform = 'translate(-50%, -50%) scale(1)';
+
+    modal.innerHTML = `
+        <div class="panel-header">
+            <h3>💳 決済確認</h3>
+            <button class="close-btn" id="fake-pay-close">×</button>
+        </div>
+        <div class="confirm-body" style="padding: 20px;">
+            <p style="font-size:0.9rem;">セキュリティのため、<br><strong>秘密の呪文</strong>を入力してください</p>
+            <div style="margin: 15px 0;">
+                <input type="password" id="fake-cvv" placeholder="例：イエティ最高" style="width:100%; padding:10px; border-radius:8px; border:1px solid #ced4da;">
+            </div>
+            <div class="confirm-actions">
+                <button id="fake-pay-btn" class="btn btn-primary" style="background:#4a5568;">購入を確定する</button>
+            </div>
+        </div>
+    `;
+
+    document.body.appendChild(modal);
+
+    document.getElementById('fake-pay-close').onclick = () => modal.remove();
+    document.getElementById('fake-pay-btn').onclick = () => {
+        const cvv = document.getElementById('fake-cvv').value;
+        if (cvv.trim() === '') {
+            alert("呪文を入力してください！");
+            return;
+        }
+
+        const btn = document.getElementById('fake-pay-btn');
+        btn.disabled = true;
+        btn.innerText = "処理中...";
+
+        setTimeout(() => {
+            const body = modal.querySelector('.confirm-body');
+            body.innerHTML = `
+                <div style="padding: 30px 0; text-align: center;">
+                    <div style="font-size: 4rem; margin-bottom: 15px; animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);">☑️</div>
+                    <h3 style="color: #2b6cb0; margin-bottom: 5px;">決済完了</h3>
+                    <p style="font-size: 0.9rem; color: #627d98;">アイテムが付与されました</p>
+                </div>
+            `;
+            
+            setTimeout(() => {
+                modal.remove();
+                callback();
+            }, 1500);
+        }, 800);
+    };
+}
+
+// Add a simple update loop for billing UI (for timers)
+setInterval(() => {
+    if (billingListEl.offsetParent !== null) { // If visible
+        renderBillingList();
+    }
+}, 1000);
 
 init();
