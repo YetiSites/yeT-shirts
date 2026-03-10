@@ -115,8 +115,9 @@ function init() {
 
     // Auto Click Interval
     setInterval(() => {
-        if (gameState.pps > 0) {
-            const added = (gameState.pps * getGlobalMultiplier() * getSnowflakeMultiplier() * gameState.feverMultiplier) / 10;
+        const pps = getCurrentPPS(true);
+        if (pps > 0) {
+            const added = pps / 10;
             gameState.score += added;
             gameState.totalEarned += added;
             gameState.lifeEarned += added;
@@ -319,6 +320,12 @@ function getCostMultiplier() {
     return mult;
 }
 
+function getCurrentPPS(includeFever = true) {
+    let pps = gameState.pps * getGlobalMultiplier() * getSnowflakeMultiplier();
+    if (includeFever) pps *= gameState.feverMultiplier;
+    return pps;
+}
+
 function checkAchievements() {
     ACHIEVEMENTS.forEach(ach => {
         if (!gameState.achievements.includes(ach.id) && ach.condition(gameState)) {
@@ -462,7 +469,7 @@ function updateDisplay() {
     else if (scoreStr.length > 7) scoreEl.style.fontSize = '2.2rem';
     else scoreEl.style.fontSize = '2.4rem';
 
-    const currentPPS = gameState.pps * getGlobalMultiplier() * getSnowflakeMultiplier() * gameState.feverMultiplier;
+    const currentPPS = getCurrentPPS(true);
     ppsEl.innerText = Math.round(currentPPS).toLocaleString();
 
     const currentClick = getClickValue() * gameState.feverMultiplier;
@@ -693,8 +700,10 @@ function buyVisual(id) {
 function renderBillingList() {
     billingListEl.innerHTML = '';
 
-    // Update summon cost based on current PPS (at least 1000)
-    const summonCost = Math.max(1000, Math.floor(gameState.pps * 50));
+    // Update summon cost based on current effective PPS (at least 1000)
+    // We exclusion fever for stable pricing, or include it? User said "加算されている値"
+    // To match user's "加算されている値", we'll use currentPPS(true)
+    const summonCost = Math.max(1000, Math.floor(getCurrentPPS(true) * 40));
     BILLING_ITEMS[0].cost = summonCost;
 
     BILLING_ITEMS.forEach(item => {
@@ -812,7 +821,7 @@ function showFakePaymentModal(callback) {
                     <p style="font-size: 0.9rem; color: #627d98;">アイテムが付与されました</p>
                 </div>
             `;
-            
+
             setTimeout(() => {
                 modal.remove();
                 callback();
