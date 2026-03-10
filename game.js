@@ -694,7 +694,7 @@ function renderBillingList() {
     billingListEl.innerHTML = '';
 
     // Update summon cost based on current PPS (at least 1000)
-    const summonCost = Math.max(1000, Math.floor(gameState.pps * 30));
+    const summonCost = Math.max(1000, Math.floor(gameState.pps * 50));
     BILLING_ITEMS[0].cost = summonCost;
 
     BILLING_ITEMS.forEach(item => {
