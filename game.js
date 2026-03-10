@@ -65,7 +65,19 @@ const ACHIEVEMENTS = [
     { id: 'rebirth-1', name: '宇宙の理', desc: '初めて転生する', icon: '☄️', condition: (state) => state.rebirthCount >= 1, bonus: '全生産 +10%' },
     { id: 'collector-100', name: '結晶コレクター', desc: '雪の結晶を100個持つ', icon: '❄️', condition: (state) => state.snowflakes >= 100, bonus: '全生産 +20%' },
     { id: 'lonely-10k', name: '孤独な情熱', desc: '今回のプレイで仲間0人で1万 pts 稼ぐ', icon: '🏔️', condition: (state) => (state.lifeEarned >= 10000 && state.upgrades.reduce((s, u) => s + u.count, 0) === 0), bonus: 'クリック +5' },
-    { id: 'billing-all', name: 'VIPサポーター', desc: 'すべての課金アイテムを購入する', icon: '🎩', condition: (state) => state.purchasedBillingItems.length >= BILLING_ITEMS.length, bonus: '購入コスト 5%OFF' }
+    { id: 'billing-all', name: 'VIPサポーター', desc: 'すべての課金アイテムを購入する', icon: '🎩', condition: (state) => state.purchasedBillingItems.length >= BILLING_ITEMS.length, bonus: '購入コスト 5%OFF' },
+    { 
+        id: 'yeti-master', 
+        name: 'イエティ・マスター', 
+        desc: 'すべての実績を開放する', 
+        icon: '👑', 
+        hidden: true,
+        condition: (state) => {
+            const basicAchievements = ACHIEVEMENTS.filter(a => a.id !== 'yeti-master');
+            return basicAchievements.every(a => state.achievements.includes(a.id));
+        }, 
+        bonus: '全生産 2倍' 
+    }
 ];
 
 // DOM Elements
@@ -310,6 +322,10 @@ function getGlobalMultiplier() {
     let mult = 1.0;
     if (gameState.achievements.includes('mini-10')) mult *= 1.1;
     if (gameState.achievements.includes('rich-1m')) mult *= 1.1;
+    if (gameState.achievements.includes('hero-100m')) mult *= 1.2;
+    if (gameState.achievements.includes('rebirth-1')) mult *= 1.1;
+    if (gameState.achievements.includes('collector-100')) mult *= 1.2;
+    if (gameState.achievements.includes('yeti-master')) mult *= 2.0;
     return mult;
 }
 
@@ -348,6 +364,10 @@ function renderAchievementList() {
     achievementListEl.innerHTML = '';
     ACHIEVEMENTS.forEach(ach => {
         const isUnlocked = gameState.achievements.includes(ach.id);
+        
+        // 隠し実績かつ未解除の場合は表示しない
+        if (ach.hidden && !isUnlocked) return;
+
         const item = document.createElement('div');
         item.className = `achievement-item ${isUnlocked ? 'unlocked' : ''}`;
         item.innerHTML = `
