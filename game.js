@@ -18,7 +18,11 @@ let gameState = {
         { id: 'spirit', name: '吹雪の精霊', baseCost: 80000, pps: 450, count: 0, tier: 6, desc: '風とともに運んでくれます' },
         { id: 'sanctuary', name: 'イエティの聖域', baseCost: 800000, pps: 2800, count: 0, tier: 7, desc: '聖なる力で生産！' },
         { id: 'guardian', name: 'オーロラの守護者', baseCost: 10000000, pps: 25000, count: 0, tier: 8, desc: '極光を操りし精鋭' },
-        { id: 'god', name: 'イエティ神', baseCost: 200000000, pps: 123456, count: 0, tier: 4, desc: '全知全能の輝き' }
+        { id: 'god', name: 'イエティ神', baseCost: 200000000, pps: 123456, count: 0, tier: 4, desc: '全知全能の輝き' },
+        { id: 'muscle', name: 'マッスルイエティ', baseCost: 1500000000, pps: 600000, count: 0, tier: 9, desc: '筋肉でポイントを生み出す' },
+        { id: 'mecha', name: 'メカイエティ', baseCost: 10000000000, pps: 5000000, count: 0, tier: 10, desc: '超合金製の高性能イエティ' },
+        { id: 'galaxy', name: 'ギャラクシーイエティ', baseCost: 80000000000, pps: 30000000, count: 0, tier: 11, desc: '宇宙のパワーを秘めた超新星' },
+        { id: 'dimension', name: '異次元のイエティ', baseCost: 500000000000, pps: 200000000, count: 0, tier: 12, desc: '時空を超えてポイント収穫' }
     ],
     visuals: [],
     selectedTier: 0,
@@ -66,17 +70,17 @@ const ACHIEVEMENTS = [
     { id: 'collector-100', name: '結晶コレクター', desc: '雪の結晶を100個持つ', icon: '❄️', condition: (state) => state.snowflakes >= 100, bonus: '全生産 +20%' },
     { id: 'lonely-10k', name: '孤独な情熱', desc: '今回のプレイで仲間0人で1万 pts 稼ぐ', icon: '🏔️', condition: (state) => (state.lifeEarned >= 10000 && state.upgrades.reduce((s, u) => s + u.count, 0) === 0), bonus: 'クリック +5' },
     { id: 'billing-all', name: 'VIPサポーター', desc: 'すべての課金アイテムを購入する', icon: '🎩', condition: (state) => state.purchasedBillingItems.length >= BILLING_ITEMS.length, bonus: '購入コスト 5%OFF' },
-    { 
-        id: 'yeti-master', 
-        name: 'イエティ・マスター', 
-        desc: 'すべての実績を開放する', 
-        icon: '👑', 
+    {
+        id: 'yeti-master',
+        name: 'イエティ・マスター',
+        desc: 'すべての実績を開放する',
+        icon: '👑',
         hidden: true,
         condition: (state) => {
             const basicAchievements = ACHIEVEMENTS.filter(a => a.id !== 'yeti-master');
             return basicAchievements.every(a => state.achievements.includes(a.id));
-        }, 
-        bonus: '全生産 2倍' 
+        },
+        bonus: '全生産 2倍'
     }
 ];
 
@@ -364,7 +368,7 @@ function renderAchievementList() {
     achievementListEl.innerHTML = '';
     ACHIEVEMENTS.forEach(ach => {
         const isUnlocked = gameState.achievements.includes(ach.id);
-        
+
         // 隠し実績かつ未解除の場合は表示しない
         if (ach.hidden && !isUnlocked) return;
 
@@ -470,6 +474,7 @@ function renderUpgrades() {
             </div>
             <div class="upgrade-info">
                 <div class="upgrade-name">${up.name}</div>
+                <div class="upgrade-desc" style="font-size:0.7rem; color:#627d98; margin-bottom:4px;">${up.desc}</div>
                 <div class="upgrade-cost">Price: ${Math.floor(cost).toLocaleString()} pts</div>
             </div>
             <div class="upgrade-count">${up.count}</div>
