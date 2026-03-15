@@ -109,7 +109,7 @@
     function init() {
       const heroSlides = document.querySelectorAll(".hero-slide");
       const heroDots = document.querySelectorAll(".hero-dot");
-      
+
       if (heroSlides.length > 1) {
         let current = 0;
 
